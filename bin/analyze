@@ -3,7 +3,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Analyzer\Analyzer;
+use Thom2503\PhpUnicodeAnalyzer\Analyzer;
 
 if ($argc < 2) {
     echo "Usage: analyze <directory>\n";

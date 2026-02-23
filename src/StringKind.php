@@ -1,10 +1,10 @@
 <?php
 
-namespace PhpUnicodeAnalyzer;
+namespace Thom2503\PhpUnicodeAnalyzer;
 
-enum StringKind {
-	case UNKNOWN;
-	case UNICODE;
-	case BINARY;
-	case MIXED;
+enum StringKind: string {
+	case UNKNOWN = "UNKNOWN";
+	case UNICODE = "UNICODE";
+	case BINARY = "BINARY";
+	case MIXED = "MIXED";
 }
