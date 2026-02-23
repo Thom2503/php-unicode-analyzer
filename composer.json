@@ -1,0 +1,19 @@
+{
+    "name": "thom2503/php-unicode-analyzer",
+    "description": "Analyzer to determine if a variable is unicode or byte",
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Thom2503\\PhpUnicodeAnalyzer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Thom2503",
+            "email": "thomveldhuis03@gmail.com"
+        }
+    ],
+    "require": {
+        "nikic/php-parser": "^5.7"
+    }
+}

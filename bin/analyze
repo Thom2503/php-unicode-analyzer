@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use Analyzer\Analyzer;
+
+if ($argc < 2) {
+    echo "Usage: analyze <directory>\n";
+    exit(1);
+}
+
+$targetDir = $argv[1];
+
+$analyzer = new Analyzer();
+$result = $analyzer->analyzeDirectory($targetDir);
+
+print_r($result);
