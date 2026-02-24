@@ -42,7 +42,7 @@ Based on the rules given it will say `UNICODE | BYTE | UNKNOWN`.
 
 ### Rules
 This is an example of how the rules can be made it is a variable in `src/FunctionRules.php`.
-``php
+```php
 	private array $rules = [
 		'strlen' => ['arg' => StringKind::BINARY],
 		'mb_strlen' => ['arg' => StringKind::UNICODE],
