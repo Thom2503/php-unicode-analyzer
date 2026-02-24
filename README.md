@@ -38,7 +38,7 @@ File: file.php
   $arr[]                   => UNICODE
   $bar[][]                 => UNKNOWN
 ```
-Based on the rules given it will say `UNICODE | BYTE | UNKNOWN`.
+Based on the rules given it will say `UNICODE | BYTE | UNKNOWN | MIXED`.
 
 ### Rules
 This is an example of how the rules can be made it is a variable in `src/FunctionRules.php`.
