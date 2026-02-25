@@ -10,6 +10,7 @@ class FunctionRules {
 		'mb_substr' => ['return' => StringKind::UNICODE],
 		'file_get_contents' => ['return' => StringKind::BINARY],
 		'json_decode' => ['return' => StringKind::UNICODE],
+		'Str::len' => ['return' => StringKind::BINARY],
 	];
 
 	public function get(string $name): ?array {

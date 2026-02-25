@@ -28,14 +28,17 @@ class Analyzer {
 		$ast = $parser->parse($code);
 
 		$state = new FlowState();
+		$rules = new FunctionRules();
 
 		$traverser = new NodeTraverser();
-		$traverser->addVisitor(new class($state) extends NodeVisitorAbstract {
+		$traverser->addVisitor(new class($state, $rules) extends NodeVisitorAbstract {
 
 			private FlowState $state;
+			private FunctionRules $rules;
 
-			public function __construct($state) {
+			public function __construct($state, $rules) {
 				$this->state = $state;
+				$this->rules = $rules;
 			}
 
 			public function enterNode(Node $node) {
@@ -47,11 +50,11 @@ class Analyzer {
 						$this->state->set($name, StringKind::UNICODE);
 						return;
 					}
-					if ($node->expr instanceof Node\Expr\Variable) {
-						$source = '$'.$node->expr->name;
-						$type = $this->state->get($source);
+					if ($node instanceof Node\Expr\Assign) {
+						$name = $this->resolveVariableName($node->var);
+						if ($name === null) return;
+						$type = $this->resolveExprType($node->expr);
 						$this->state->set($name, $type);
-						return;
 					}
 				}
 			}
@@ -73,6 +76,38 @@ class Analyzer {
 					return null;
 				}
 				return null;
+			}
+
+			private function resolveExprType($expr): StringKind {
+				if ($expr instanceof Node\Scalar\String_) {
+					return StringKind::UNICODE;
+				}
+
+				if ($expr instanceof Node\Expr\Variable) {
+					$name = is_string($expr->name) ? '$' . $expr->name : null;
+					return $name ? $this->state->get($name) : StringKind::UNKNOWN;
+				}
+
+				// To handle $a . $b etc.
+				if ($expr instanceof Node\Expr\BinaryOp\Concat) {
+					$left = $this->resolveExprType($expr->left);
+					$right = $this->resolveExprType($expr->right);
+					return $this->state->merge($left, $right);
+				}
+
+				if ($expr instanceof Node\Expr\FuncCall) {
+					if ($expr->name instanceof Node\Name) {
+						$fn = strtolower($expr->name->toString());
+			
+						$rule = $this->rules->get($fn);
+						if ($rule && isset($rule['return'])) {
+							return $rule['return'];
+						}
+					}
+					return StringKind::UNKNOWN;
+				}
+
+				return StringKind::UNKNOWN;
 			}
 		});
 
