@@ -31,10 +31,11 @@ class Analyzer {
 		$rules = new FunctionRules();
 
 		$traverser = new NodeTraverser();
-		$traverser->addVisitor(new class($state, $rules) extends NodeVisitorAbstract {
+		$visitor = new class($state, $rules) extends NodeVisitorAbstract {
 
 			private FlowState $state;
 			private FunctionRules $rules;
+			private array $violations = [];
 
 			public function __construct($state, $rules) {
 				$this->state = $state;
@@ -42,20 +43,17 @@ class Analyzer {
 			}
 
 			public function enterNode(Node $node) {
-				// $a = "text"
 				if ($node instanceof Node\Expr\Assign) {
 					$name = $this->resolveVariableName($node->var);
 					if ($name === null) return;
-					if ($node->expr instanceof Node\Scalar\String_) {
-						$this->state->set($name, StringKind::UNICODE);
-						return;
-					}
-					if ($node instanceof Node\Expr\Assign) {
-						$name = $this->resolveVariableName($node->var);
-						if ($name === null) return;
-						$type = $this->resolveExprType($node->expr);
-						$this->state->set($name, $type);
-					}
+			
+					$type = $this->resolveExprType($node->expr);
+					$this->state->set($name, $type);
+					return;
+				}
+				if ($node instanceof Node\Expr\FuncCall) {
+					$this->isValidFunctionCall($node);
+					return;
 				}
 			}
 
@@ -109,10 +107,47 @@ class Analyzer {
 
 				return StringKind::UNKNOWN;
 			}
-		});
 
+			private function isValidFunctionCall($call): void {
+				if (!$call->name instanceof Node\Name) {
+					return;
+				}
+
+				$fun = strtolower($call->name->toString());
+				$rule = $this->rules->get($fun);
+
+				if (!$rule) return;
+				if (!isset($rule['arg'])) return;
+				if (!isset($call->args[0])) return;
+
+				$expected = $rule['arg'];
+				$actual = $this->resolveExprType($call->args[0]->value);
+
+				if (!self::isCompatible($actual, $expected)) {
+					$line = $call->getStartLine();
+					$this->violations[] = [
+						'line' => $line,
+						'function' => $fun,
+						'expected' => $expected->value,
+						'actual' => $actual->value,
+					];
+				}
+			}
+
+			private static function isCompatible(StringKind $actual, StringKind $expected): bool {
+				if ($actual === StringKind::UNKNOWN) return true;
+				if ($actual === $expected) return true;
+				return false;
+			}
+
+			public function getViolations(): array {
+				return $this->violations;
+			}
+		};
+
+		$traverser->addVisitor($visitor);
 		$traverser->traverse($ast);
 
-		return $state->all();
+		return ['state' => $state->all(), 'violations' => $visitor->getViolations()];
 	}
 }

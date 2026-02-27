@@ -15,14 +15,22 @@ $targetDir = $argv[1];
 $analyzer = new Analyzer();
 $result = $analyzer->analyzeDirectory($targetDir);
 
-foreach ($result as $file => $r) {
-	if (count($r) != 0) {
+foreach ($result as $file => $res) {
+	$state = $res['state'];
+	$violations = $res['violations'];
+	if (count($state) != 0) {
 		echo "\033[1;32mFile: $file\033[0m\n";
 
-		foreach ($r as $key => $enum) {
+		foreach ($state as $key => $enum) {
 			// padding with 25 chars
 			printf("  %-25s => %s\n", $key, $enum->value);
 		}
 		echo "\n"; 
+	}
+	if (count($violations) != 0) {
+		echo "  \033[1;31mViolations:\033[0m\n";
+		foreach ($violations as $v) {
+			printf("    Line %-5d expected %-8s but got %-8s in %s\n", $v['line'], $v['expected'], $v['actual'], $v['function']);
+		}
 	}
 }
