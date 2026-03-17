@@ -2,6 +2,13 @@
 
 namespace Thom2503\PhpUnicodeAnalyzer;
 
+/**
+ * Rules to specify what functions have what kind of string kinds as either arguments or return types.
+ * 
+ * @property array $rules - private array of rules to determine the kinds for several functions
+ * 
+ * @method ?array get(string $name) - search for a name in the $rules to get the StringKind.
+ */
 class FunctionRules {
 	private array $rules = [
 		'strlen' => ['arg' => StringKind::BINARY],
